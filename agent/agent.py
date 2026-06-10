@@ -88,36 +88,22 @@ def create_agent() -> LlmAgent:
     Returns:
         Configured LlmAgent ready for use
     """
-    # =================================================================
     # TODO 1: Create the Model Armor guard
-    # =================================================================
-    # Use create_model_armor_guard() to create the security guard
-    # This will read configuration from environment variables
-    # =================================================================
+    model_armor_guard = create_model_armor_guard()
 
-    model_armor_guard = None  # PLACEHOLDER - Replace with your implementation
-
-    # =================================================================
     # TODO 2: Create the BigQuery MCP toolset
-    # =================================================================
-    # Use get_bigquery_mcp_toolset() to create the BigQuery tools
-    # =================================================================
+    bigquery_tools = get_bigquery_mcp_toolset()
 
-    bigquery_tools = None  # PLACEHOLDER - Replace with your implementation
-
-    # =================================================================
     # TODO 3: Create the LlmAgent with callbacks
-    # =================================================================
-    # Create an LlmAgent with:
-    # - model: Use Gemini (e.g., "gemini-2.5-flash")
-    # - name: "customer_service_agent"
-    # - instruction: Use get_agent_instructions()
-    # - tools: Include the BigQuery toolset
-    # - before_model_callback: Use model_armor_guard.before_model_callback
-    # - after_model_callback: Use model_armor_guard.after_model_callback
-    # =================================================================
-
-    agent = None  # PLACEHOLDER - Replace with your implementation
+    # Callbacks are passed directly to LlmAgent (not via plugins) so they work with `adk web`.
+    agent = LlmAgent(
+        model="gemini-2.5-flash",
+        name="customer_service_agent",
+        instruction=get_agent_instructions(),
+        tools=[bigquery_tools],
+        before_model_callback=model_armor_guard.before_model_callback,
+        after_model_callback=model_armor_guard.after_model_callback,
+    )
 
     return agent
 
@@ -143,4 +129,5 @@ if _RUNNING_IN_AGENT_ENGINE:
     root_agent = None
 else:
     # Local development: Create agent now for adk web
-    root_agent = None  # PLACEHOLDER - Replace with: root_agent = create_agent()
+    # TODO 4: Create the root_agent instance
+    root_agent = create_agent()

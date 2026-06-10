@@ -4,7 +4,18 @@
 # These are the dependencies needed when the agent runs in Agent Engine
 
 # ADK framework
-google-adk==1.21.0
+# The stack must be new enough to support AGENT_IDENTITY certificate-bound tokens over mTLS;
+# the original pins (adk 1.21.0 / aiplatform 1.132.0 / auth 2.45.0) predate that enforcement
+# and every Google API call from the deployed agent fails with 401 UNAUTHENTICATED.
+# Extras: [a2a] the ADK 2.x server entrypoint imports a2a at startup; [mcp] MCPToolset needs
+# the mcp package (no longer a core dep in 2.x); [agent-identity] pulls
+# google-cloud-iamconnectorcredentials for AGENT_IDENTITY bound-token credentials.
+google-adk[a2a,mcp,agent-identity]==2.2.0
+google-genai==2.8.0
+# Required for AGENT_IDENTITY: google-genai only routes async requests through google-auth's
+# AsyncAuthorizedSession (which does mTLS with the workload SPIFFE certs) when aiohttp is
+# installed; without it requests fall back to plain httpx and bound tokens are rejected (401).
+aiohttp>=3.10
 
 # Model Armor for security
 google-cloud-modelarmor==0.3.0
@@ -13,7 +24,12 @@ google-cloud-modelarmor==0.3.0
 google-cloud-bigquery==3.39.0
 
 # Auth
-google-auth==2.45.0
+google-auth==2.53.0
 
 # Vertex AI for Agent Engine
-google-cloud-aiplatform==1.132.0
+google-cloud-aiplatform==1.157.0
+
+# Required for the AGENT_IDENTITY mTLS (SPIFFE workload cert) path used by google-auth's
+# transport when the agent authenticates as its own identity. Without it the runtime fails to
+# start with: ModuleNotFoundError: No module named 'OpenSSL'.
+pyopenssl>=24.0.0

@@ -94,8 +94,8 @@ def create_session(user_id: str = "test_user") -> str:
     return session_id
 
 
-def send_message(session_id: str, message: str, user_id: str = "test_user", debug: bool = False) -> str:
-    """Send a message and collect the streaming response."""
+def _send_once(session_id: str, message: str, user_id: str = "test_user", debug: bool = False) -> str:
+    """Send a message and collect the streaming response (single attempt)."""
     response = requests.post(
         f"{BASE_URL}/{RESOURCE_PATH}:streamQuery?alt=sse",
         headers=HEADERS,
@@ -148,6 +148,24 @@ def send_message(session_id: str, message: str, user_id: str = "test_user", debu
                 pass
 
     return full_response.strip()
+
+
+def send_message(session_id: str, message: str, user_id: str = "test_user", debug: bool = False) -> str:
+    """Retry wrapper: tolerate transient model 429/5xx and empty (capacity-throttled) responses."""
+    import time
+    last = ""
+    for attempt in range(5):
+        try:
+            out = _send_once(session_id, message, user_id, debug=debug)
+            if out:
+                return out
+        except requests.exceptions.HTTPError as e:
+            code = getattr(getattr(e, "response", None), "status_code", 0)
+            if code not in (429, 500, 503):
+                raise
+        if attempt < 4:
+            time.sleep(3 * (attempt + 1))
+    return last
 
 
 def extract_text_from_response(data: dict, debug: bool = False) -> str:

@@ -356,7 +356,6 @@ cmd = [
     "--project", PROJECT_ID,
     "--region", LOCATION,
     "--staging_bucket", f"gs://{STAGING_BUCKET}",
-    "--trace_to_cloud",
     "--env_file", env_file_path,
     "--agent_engine_id", agent_engine_id,  # Always update the instance we created/have
 ]

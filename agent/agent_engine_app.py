@@ -26,7 +26,11 @@ from .agent import create_agent
 # =============================================================================
 # Use the factory function to create the agent lazily at runtime
 
+# NOTE: tracing disabled. The Cloud Trace instrumentor runs in AdkApp.set_up() and makes a
+# Resource Manager get_project() call at boot, before a freshly-created Agent Identity's workload
+# credentials are accepted -> startup fails with 401 Unauthenticated. The security demo (Agent
+# Identity IAM + Model Armor) does not need tracing; re-enable once the identity is provisioned.
 app = agent_engines.AdkApp(
     agent=create_agent,  # Pass the factory function, not the agent instance
-    enable_tracing=True,  # Enable Cloud Trace for observability
+    enable_tracing=False,
 )

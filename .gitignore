@@ -41,6 +41,10 @@ htmlcov/
 .gcloudignore
 application_default_credentials.json
 
+# ADK local session cache
+.adk/
+agent/.adk/
+
 # Logs
 *.log
 logs/
