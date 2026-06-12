@@ -1,0 +1,8 @@
+# Gateway-native agent: registry-resolved MCP toolsets + Agent Identity OBO. No in-code auth/Model Armor.
+google-adk[a2a,mcp,agent-identity]==2.2.0
+google-genai==2.8.0
+# Required for AGENT_IDENTITY cert-bound tokens over mTLS (see prior debugging).
+aiohttp>=3.10
+google-auth==2.53.0
+google-cloud-aiplatform==1.157.0
+pyopenssl>=24.0.0

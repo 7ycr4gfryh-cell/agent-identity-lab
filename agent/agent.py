@@ -20,6 +20,12 @@ from google.adk.agents import LlmAgent
 from .guards.model_armor_guard import create_model_armor_guard
 from .tools.bigquery_tools import get_bigquery_mcp_toolset, get_customer_service_instructions
 
+# On-behalf-of-user (3LO) BigQuery tool — only enabled once the consent callback
+# (OBO_CONTINUE_URI) is configured, so the agent is unchanged without it.
+_OBO_ENABLED = bool(os.environ.get("OBO_CONTINUE_URI"))
+if _OBO_ENABLED:
+    from .tools.obo_bigquery_tools import get_obo_bigquery_tool
+
 
 # =============================================================================
 # Configuration
@@ -94,13 +100,28 @@ def create_agent() -> LlmAgent:
     # TODO 2: Create the BigQuery MCP toolset
     bigquery_tools = get_bigquery_mcp_toolset()
 
+    tools = [bigquery_tools]
+    if _OBO_ENABLED:
+        # Adds an on-behalf-of-user BigQuery tool alongside the agent-as-itself one.
+        tools.append(get_obo_bigquery_tool())
+
+    instruction = get_agent_instructions()
+    if _OBO_ENABLED:
+        instruction += (
+            "\n\n## Personal data access (on behalf of you)\n"
+            "You also have a `read_my_datasets` tool that reads the caller's own "
+            "finance and marketing demo tables using their delegated credentials. "
+            "When the user asks what finance/marketing data they personally can see, "
+            "use it. It may trigger a one-time sign-in/consent — that is expected.\n"
+        )
+
     # TODO 3: Create the LlmAgent with callbacks
     # Callbacks are passed directly to LlmAgent (not via plugins) so they work with `adk web`.
     agent = LlmAgent(
         model="gemini-2.5-flash",
         name="customer_service_agent",
-        instruction=get_agent_instructions(),
-        tools=[bigquery_tools],
+        instruction=instruction,
+        tools=tools,
         before_model_callback=model_armor_guard.before_model_callback,
         after_model_callback=model_armor_guard.after_model_callback,
     )

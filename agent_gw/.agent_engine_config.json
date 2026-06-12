@@ -1,0 +1,10 @@
+{
+  "agent_gateway_config": {
+    "agent_to_anywhere_config": {
+      "agent_gateway": "projects/project-4382e8df-acc3-437e-9e7/locations/us-central1/agentGateways/agw-egress"
+    },
+    "client_to_agent_config": {
+      "agent_gateway": "projects/project-4382e8df-acc3-437e-9e7/locations/us-central1/agentGateways/agw-ingress"
+    }
+  }
+}

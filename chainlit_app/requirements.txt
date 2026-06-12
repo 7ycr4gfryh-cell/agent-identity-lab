@@ -1,0 +1,5 @@
+# Chainlit UI only — the agent runs remotely on Agent Engine, so no google-adk here
+# (which also avoids the adk/chainlit OpenTelemetry version clash).
+chainlit==2.11.1
+google-auth==2.53.0
+requests==2.32.3
